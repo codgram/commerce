@@ -356,3 +356,6 @@ MigrationBackup/
 # Application settings
 /Server/appsettings.json
 /Server/appsettings.Development.json
+
+# Publish profiles
+/Server/Properties/ServiceDependencies/service-manager - Web Deploy/profile.arm.json
