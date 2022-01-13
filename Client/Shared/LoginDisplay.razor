@@ -1,0 +1,68 @@
+﻿@using Commerce.Client.Services
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+
+@inject NavigationManager Navigation
+@inject SignOutSessionStateManager SignOutManager
+@inject StateContainer StateContainer
+
+<AuthorizeView>
+    <Authorized>
+        <div class="dropdown text-end me-2">
+          <a href="#" class="link-dark text-decoration-none" id="dropdownUser1" data-bs-toggle="dropdown" aria-expanded="false">
+            <img src="https://github.com/mdo.png" alt="mdo" width="32" height="32" class="rounded-circle">
+          </a>
+          <ul class="dropdown-menu text-small" aria-labelledby="dropdownUser1" style="">
+            <li><a class="dropdown-item" href="authentication/profile">@context.User.Identity?.Name!</a></li>
+            @if(StateContainer.Company is null)
+            {
+                <li><a class="dropdown-item" href='@($"companies/choose")'>Choose company</a></li>
+            }
+            else
+            {
+                <li><a class="dropdown-item" href='@($"companies/{StateContainer.Company.Slug}")'>@StateContainer.Company.Name</a></li>
+                <li><a class="dropdown-item" href='@($"companies/choose")'>Change company</a></li>
+                <li><a class="dropdown-item" href='@($"setup")'>Settings</a></li>
+            }
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item"  @onclick="BeginSignOut">Sign out</a></li>
+          </ul>
+        </div>
+
+        @if(StateContainer.Company is not null) {
+                <a class="btn btn-sm btn-secondary" 
+                        data-bs-toggle="offcanvas" 
+                        data-bs-target="#offcanvasChooseCompany" 
+                        aria-controls="offcanvasChooseCompany">
+                        @StateContainer.Company.Slug</a>
+            }
+            else {
+                <a class="btn btn-sm btn-secondary" 
+                        data-bs-toggle="offcanvas" 
+                        data-bs-target="#offcanvasChooseCompany" 
+                        aria-controls="offcanvasChooseCompany">
+                        Choose company</a>
+            }
+    </Authorized>
+    <NotAuthorized>
+        <a href="authentication/register">Register</a>
+        <a href="authentication/login">Sign in</a>
+    </NotAuthorized>
+</AuthorizeView>
+
+
+
+
+@code{
+
+    protected override void OnInitialized()
+    {
+        StateContainer.OnChange += StateHasChanged;
+    }
+
+    private async Task BeginSignOut(MouseEventArgs args)
+    {
+        await SignOutManager.SetSignOutState();
+        Navigation.NavigateTo("authentication/logout");
+    }
+}

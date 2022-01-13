@@ -1,0 +1,27 @@
+﻿
+
+
+
+<EditForm Model="@Category" OnValidSubmit="@HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+
+    <div class="mb-3">
+      <label for="inputName" class="form-label">Name</label>
+      <InputText class="form-control" id="inputName" placeholder="category name" @bind-Value="Category.Name" />
+    </div>
+
+    <div class="mb-3">
+      <label for="inputDescription" class="form-label">Description</label>
+      <InputTextArea class="form-control" id="inputDescription" placeholder="Some info about the category" rows="3" @bind-Value="Category.Description"></InputTextArea>
+    </div>
+
+    <button type="submit" class="btn btn-primary" data-bs-dismiss="offcanvas"  aria-label="Close">@ButtonText</button>
+</EditForm>
+
+@code {
+    [Parameter] public Category Category { get; set;}
+    [Parameter] public EventCallback HandleValidSubmit { get; set; }
+    [Parameter] public string ButtonText { get; set; }
+}

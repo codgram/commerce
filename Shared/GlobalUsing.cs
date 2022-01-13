@@ -1,0 +1,9 @@
+﻿global using System.ComponentModel.DataAnnotations;
+global using System.ComponentModel.DataAnnotations.Schema;
+global using Commerce.Shared.Models;
+global using Commerce.Shared.Models.Organization;
+global using Commerce.Shared.Models.ProductManagement;
+global using Commerce.Shared.Models.Procurement;
+global using Commerce.Shared.Models.Sales;
+global using Commerce.Shared.Models.Setup;
+global using System.Text.Json.Serialization;

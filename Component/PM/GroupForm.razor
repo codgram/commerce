@@ -1,0 +1,38 @@
+﻿
+
+
+
+<EditForm Model="@Group" OnValidSubmit="@HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="mb-3">
+        <label for="categoriesList" class="form-label">Categories</label>
+        <input class="form-control" list="datalistOptions" id="categoriesList" placeholder="Search categories..." @bind="Group.CategoryId">
+        <datalist id="datalistOptions">
+            @foreach(var category in Categories)
+            {
+                <option value="@category.CategoryId">@category.Name</option>
+            }
+        </datalist>
+    </div>
+
+    <div class="mb-3">
+      <label for="inputName" class="form-label">Name</label>
+      <InputText class="form-control" id="inputName" placeholder="group name" @bind-Value="Group.Name" />
+    </div>
+
+    <div class="mb-3">
+      <label for="inputDescription" class="form-label">Description</label>
+      <InputTextArea class="form-control" id="inputDescription" placeholder="Some info about the group" rows="3" @bind-Value="Group.Description"></InputTextArea>
+    </div>
+
+    <button type="submit" class="btn btn-primary" data-bs-dismiss="offcanvas"  aria-label="Close">@ButtonText</button>
+</EditForm>
+
+@code {
+    [Parameter] public Group Group { get; set;}
+    [Parameter] public List<Category> Categories { get; set;}
+    [Parameter] public EventCallback HandleValidSubmit { get; set; }
+    [Parameter] public string ButtonText { get; set; }
+}

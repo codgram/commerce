@@ -1,0 +1,104 @@
+﻿@page "/org/companies"
+@inject HttpClient _client
+@layout OrgLayout
+@attribute [Authorize]
+
+
+<button class="btn btn-primary" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasExample" aria-controls="offcanvasExample">
+  Create company
+</button>
+
+
+<Table Items="Companies" Caption="companies">
+    <TableHeader>
+        <th>Name</th>
+        <th>Description</th>
+        <th></th>
+    </TableHeader>
+    <RowTemplate>
+        <td>@context.Name</td>
+        <td>@context.Description</td>
+        <td>
+            <div class="btn-group">
+                <button type="button" class="btn btn-sm btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                  Action
+                </button>
+                <ul class="dropdown-menu">
+                  <li><a class="dropdown-item" >Members</a></li>
+                  <li><hr class="dropdown-divider"></li>
+                  <li><a class="dropdown-item" >Action 3</a></li>
+                </ul>
+            </div>
+        </td>
+    </RowTemplate>
+</Table>
+
+
+
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasExample" aria-labelledby="offcanvasExampleLabel">
+  <div class="offcanvas-header">
+    <h5 class="offcanvas-title" id="offcanvasExampleLabel">Create a new company</h5>
+    <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+  </div>
+  <div class="offcanvas-body">
+
+    @if(CompanySlugs is not null)
+    {
+        
+        <CompanyForm Company="@NewCompany" CompanySlugs="@CompanySlugs" ButtonText="Create" HandleValidSubmit="CreateCompany" />
+    }
+    
+
+  </div>
+</div>
+
+
+@code {
+    public List<Company> Companies { get; set; }
+    public Company NewCompany = new Company();
+
+    public string[] CompanySlugs { get; set; }
+
+    public string AlertMessage { get; set; }
+    public string AlertStyle { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            Companies = await _client.GetFromJsonAsync<List<Company>>("api/companies");
+            CompanySlugs = await _client.GetFromJsonAsync<string[]>("api/companies/slugs/all");
+        }
+        catch (AccessTokenNotAvailableException exception)
+        {
+            exception.Redirect();
+        }
+
+    }
+
+    public async void CreateCompany()
+    {
+        var response = await _client.PostAsJsonAsync("api/companies", NewCompany);
+
+        if (response.IsSuccessStatusCode)
+        {
+            var company =  await response.Content.ReadFromJsonAsync<Company>();
+            Companies.Add(company);
+            NewCompany = new Company();
+        }
+        var test = response.StatusCode;
+
+        //else if(response.StatusCode == System.Net.HttpStatusCode.NotAcceptable)
+        //{
+
+        //    AlertMessage = response.Content;
+        //    AlertStyle = "danger";
+        //}
+
+        StateHasChanged();
+    }
+
+    
+
+}

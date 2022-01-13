@@ -1,0 +1,186 @@
+﻿
+
+
+
+<EditForm Model="@Product" OnValidSubmit="@HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="mb-3">
+        <label for="subGroupsList" class="form-label">Sub Group</label>
+        <input class="form-control" list="subGroupsListOptions" id="subGroupsList" placeholder="Search sub-groups..." @bind="Product.SubGroupId">
+        <datalist id="subGroupsListOptions">
+            @foreach(var subGroup in SubGroups)
+            {
+                <option value="@subGroup.SubGroupId">@subGroup.Name</option>
+            }
+        </datalist>
+    </div>
+
+    <div class="mb-3">
+      <label for="inputCode" class="form-label">Code</label>
+      <InputText class="form-control" id="inputCode" placeholder="product code" @bind-Value="Product.Code" />
+    </div>
+
+    <div class="mb-3">
+      <label for="inputFamily" class="form-label">Family</label>
+      <InputText class="form-control" id="inputFamily" placeholder="product family" @bind-Value="Product.Family" />
+    </div>
+
+    <div class="mb-3">
+      <label for="inputDescription" class="form-label">Description</label>
+      <InputTextArea class="form-control" id="inputDescription" placeholder="Some info about the group" rows="3" @bind-Value="Product.Description"></InputTextArea>
+    </div>
+
+
+    @if(Variant is not null)
+    {
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault" @bind="HasModels">
+            <label class="form-check-label" for="flexCheckDefault">
+              Has different Models
+            </label>
+        </div>
+
+        @if(HasModels)
+        {
+            <div class="mb-3">
+              <label for="inputValue" class="form-label">Model</label>
+              <InputText class="form-control" id="inputValue" placeholder="Variant model" @bind-Value="Variant.Model" />
+            </div>
+        }
+        
+
+
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault" @bind="HasTypes">
+          <label class="form-check-label" for="flexCheckDefault">
+            Has different types
+          </label>
+        </div>
+
+        @if(HasTypes)
+        {
+           <div class="mb-3">
+              <label for="inputValue" class="form-label">Type</label>
+              <InputText class="form-control" id="inputValue" placeholder="Variant type" @bind-Value="Variant.Type" />
+            </div> 
+        }
+        
+
+
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault" @bind="HasColors">
+          <label class="form-check-label" for="flexCheckDefault">
+            Has different colors
+          </label>
+        </div>
+
+        @if(HasColors)
+        {
+           <div class="mb-3">
+              <label for="inputValue" class="form-label">Color</label>
+              <InputText class="form-control" id="inputValue" placeholder="Variant color" @bind-Value="Variant.Color" />
+            </div> 
+        }
+        
+
+
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault" @bind="HasSizes">
+          <label class="form-check-label" for="flexCheckDefault">
+            Has different sizes
+          </label>
+        </div>
+
+        @if(HasSizes)
+        {
+            <div class="mb-3">
+              <label for="inputValue" class="form-label">Size</label>
+              <InputText class="form-control" id="inputValue" placeholder="Variant size" @bind-Value="Variant.Size" />
+            </div>
+        }
+        
+
+
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault" @bind="HasFlavors">
+          <label class="form-check-label" for="flexCheckDefault">
+            Has different flavors
+          </label>
+        </div>
+
+        @if(HasFlavors)
+        {
+            <div class="mb-3">
+              <label for="inputValue" class="form-label">Flavor</label>
+              <InputText class="form-control" id="inputValue" placeholder="Variant flavor" @bind-Value="Variant.Flavor" />
+            </div>
+        }
+
+        
+    }
+
+    <div class="mb-3">
+        <label for="baseUOMList" class="form-label">Base UOM</label>
+        <input class="form-control" list="baseUOMListOptions" id="baseUOMList" placeholder="Search base UOM..." @bind="Product.BaseUOMId">
+        <datalist id="baseUOMListOptions">
+            @foreach(var uom in UnitOfMeasures)
+            {
+                <option value="@uom.UnitOfMeasureId">@uom.Code</option>
+            }
+        </datalist>
+    </div>
+
+    <div class="mb-3">
+        <label for="salesUOMList" class="form-label">Sales UOM</label>
+        <input class="form-control" list="salesUOMListOptions" id="salesUOMList" placeholder="Search sales UOM..." @bind="Product.SalesUOMId">
+        <datalist id="salesUOMListOptions">
+            @foreach(var uom in UnitOfMeasures)
+            {
+                <option value="@uom.UnitOfMeasureId">@uom.Code</option>
+            }
+        </datalist>
+    </div>
+
+    <div class="mb-3">
+        <label for="purhcaseUOMList" class="form-label">Purchase UOM</label>
+        <input class="form-control" list="purhcaseUOMListOptions" id="purhcaseUOMList" placeholder="Search purchase UOM..." @bind="Product.PurchaseUOMId">
+        <datalist id="purhcaseUOMListOptions">
+            @foreach(var uom in UnitOfMeasures)
+            {
+                <option value="@uom.UnitOfMeasureId">@uom.Code</option>
+            }
+        </datalist>
+    </div>
+
+    <div class="mb-3">
+        <label for="transferUOMList" class="form-label">Transfer UOM</label>
+        <input class="form-control" list="transferUOMListOptions" id="transferUOMList" placeholder="Search transfer UOM..." @bind="Product.TransferUOMId">
+        <datalist id="transferUOMListOptions">
+            @foreach(var uom in UnitOfMeasures)
+            {
+                <option value="@uom.UnitOfMeasureId">@uom.Code</option>
+            }
+        </datalist>
+    </div>
+
+    <button type="submit" class="btn btn-primary" data-bs-dismiss="offcanvas"  aria-label="Close">@ButtonText</button>
+
+</EditForm>
+
+@code {
+    [Parameter] public Product Product { get; set;}
+    [Parameter] public Variant Variant { get; set;}
+    [Parameter] public List<SubGroup> SubGroups { get; set;}
+    [Parameter] public List<UnitOfMeasure> UnitOfMeasures { get; set;}
+    [Parameter] public EventCallback HandleValidSubmit { get; set; }
+    [Parameter] public string ButtonText { get; set; }
+
+
+    public bool HasModels {  get;  set; }
+    public bool HasTypes {  get;  set; }
+    public bool HasColors {  get;  set; }
+    public bool HasSizes {  get;  set; }
+    public bool HasFlavors {  get;  set; }
+}

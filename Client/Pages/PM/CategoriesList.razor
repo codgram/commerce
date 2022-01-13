@@ -1,0 +1,127 @@
+﻿@page "/pm/categories"
+@inject HttpClient _client
+@inject IJSRuntime _jsRuntime
+@inherits ProductManagementBase
+@layout PMLayout
+@attribute [Authorize]
+
+
+<button class="btn btn-primary" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasEnd" aria-controls="offcanvasEnd">
+  Create category
+</button>
+
+
+
+<Table Items="Categories" Caption="categories">
+    <TableHeader>
+        <th>Name</th>
+        <th>Description</th>
+        <th></th>
+    </TableHeader>
+    <RowTemplate>
+        <td>@context.Name</td>
+        <td>@context.Description</td>
+        <td>
+            <div class="btn-group">
+                <button type="button" class="btn btn-sm btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                  Action
+                </button>
+                <ul class="dropdown-menu">
+                  <li><a class="dropdown-item" >Details</a></li>
+                  <li><a class="dropdown-item" data-bs-toggle="offcanvas" 
+                                                data-bs-target="#offcanvasUpdate" 
+                                                aria-controls="offcanvasUpdate" 
+                                                @onclick="@(() => SelectCategory(context))">Update</a></li>
+                  <li><hr class="dropdown-divider"></li>
+                  <li><a class="dropdown-item" @onclick=@(() => DeleteCategoryAsync(context.CategoryId))>Delete</a></li>
+                </ul>
+            </div>
+        </td>
+    </RowTemplate>
+</Table>
+
+
+
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasEnd" aria-labelledby="offcanvasEndLabel">
+  <div class="offcanvas-header">
+    <h5 class="offcanvas-title" id="offcanvasEndLabel">Create a new category</h5>
+    <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+  </div>
+  <div class="offcanvas-body">
+
+    <CategoryForm Category="@NewCategory" ButtonText="Create" HandleValidSubmit="CreateCategoryAsync"/>
+
+  </div>
+</div>
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasUpdate" aria-labelledby="offcanvasUpdateLabel">
+  <div class="offcanvas-header">
+    <h5 class="offcanvas-title" id="offcanvasUpdateLabel">Edit</h5>
+    <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+  </div>
+  <div class="offcanvas-body">
+
+    @if(Category is not null)
+    {
+        <CategoryForm Category="@Category" ButtonText="Update" HandleValidSubmit="UpdateCategoryAsync"/>
+    }
+        
+
+  </div>
+</div>
+
+
+@code {
+
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            Categories = await GetAsync<List<Category>>($"categories?companyId={_stateContainer.Company.CompanyId}");
+        }
+        catch (AccessTokenNotAvailableException exception)
+        {
+            exception.Redirect();
+        }
+
+    }
+
+    public void SelectCategory(Category category)
+    {
+        Category = category;
+    }
+
+    public async void CreateCategoryAsync()
+    {
+        NewCategory.CompanyId = _stateContainer.Company.CompanyId;
+        var category = await CreateAsync(NewCategory, "categories");
+        Categories.Add(category);
+        NewCategory = new Category();
+        StateHasChanged();
+    }
+
+    public async void UpdateCategoryAsync()
+    {
+        await UpdateAsync(Category, "categories", Category.CategoryId);
+        var c = Categories.FirstOrDefault(c => c.CategoryId == Category.CategoryId);
+        c = Category;
+        StateHasChanged();
+    }
+
+    public async void DeleteCategoryAsync(int categoryId)
+    {
+        var Id = await DeleteAsync<Category>("categories", categoryId);
+        var c = Categories.FirstOrDefault(c => c.CategoryId == Id);
+        if(c is not null)
+        {
+            Categories.Remove(c);
+        }
+        
+        StateHasChanged();
+    }
+
+}

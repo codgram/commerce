@@ -1,0 +1,104 @@
+﻿@page "/org/companies/{id}/members"
+@inject HttpClient _client
+@layout OrgLayout
+@attribute [Authorize]
+
+
+<button class="btn btn-primary" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasExample" aria-controls="offcanvasExample">
+  Create Member
+</button>
+
+
+<Table Items="Members" Caption="Members">
+    <TableHeader>
+        <th>Username</th>
+        <th>Email</th>
+        <th></th>
+    </TableHeader>
+    <RowTemplate>
+        <td>@context.CommerceUser.UserName</td>
+        <td>@context.CommerceUser.Email</td>
+        <td>
+            <div class="btn-group">
+                <button type="button" class="btn btn-sm btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                  Action
+                </button>
+                <ul class="dropdown-menu">
+                  <li><a class="dropdown-item" >Details</a></li>
+                  <li><hr class="dropdown-divider"></li>
+                  <li><a class="dropdown-item">Remove</a></li>
+                </ul>
+            </div>
+        </td>
+    </RowTemplate>
+</Table>
+
+
+
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasExample" aria-labelledby="offcanvasExampleLabel">
+  <div class="offcanvas-header">
+    <h5 class="offcanvas-title" id="offcanvasExampleLabel">Create a new Member</h5>
+    <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+  </div>
+  <div class="offcanvas-body">
+
+    @if(MemberSlugs is not null)
+    {
+        
+        <MemberForm Member="@NewMember" MemberSlugs="@MemberSlugs" ButtonText="Create" HandleValidSubmit="CreateMember" />
+    }
+    
+
+  </div>
+</div>
+
+
+@code {
+    public List<Member> Members { get; set; }
+    public Member NewMember = new Member();
+
+    public string[] MemberSlugs { get; set; }
+
+    public string AlertMessage { get; set; }
+    public string AlertStyle { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            Members = await _client.GetFromJsonAsync<List<Member>>("api/Members");
+            MemberSlugs = await _client.GetFromJsonAsync<string[]>("api/Members/slugs/all");
+        }
+        catch (AccessTokenNotAvailableException exception)
+        {
+            exception.Redirect();
+        }
+
+    }
+
+    public async void CreateMember()
+    {
+        var response = await _client.PostAsJsonAsync("api/Members", NewMember);
+
+        if (response.IsSuccessStatusCode)
+        {
+            var Member =  await response.Content.ReadFromJsonAsync<Member>();
+            Members.Add(Member);
+            NewMember = new Member();
+        }
+        var test = response.StatusCode;
+
+        //else if(response.StatusCode == System.Net.HttpStatusCode.NotAcceptable)
+        //{
+
+        //    AlertMessage = response.Content;
+        //    AlertStyle = "danger";
+        //}
+
+        StateHasChanged();
+    }
+
+    
+
+}

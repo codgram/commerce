@@ -1,0 +1,142 @@
+﻿@page "/pm/products/{Id:int}/variants"
+@inject HttpClient _client
+@inject IJSRuntime _jsRuntime
+@inherits ProductManagementBase
+@layout PMLayout
+@attribute [Authorize]
+
+
+<button class="btn btn-primary" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasEnd" aria-controls="offcanvasEnd">
+  Create Variant
+</button>
+
+
+
+<Table Items="Variants" Caption="Variants">
+    <TableHeader>
+        <th>Code</th>
+        <th>Product Code</th>
+        <th>Model</th>
+        <th>Type</th>
+        <th>Color</th>
+        <th>Size</th>
+        <th>Flavor</th>
+        <th>Description</th>
+        <th></th>
+    </TableHeader>
+    <RowTemplate>
+        <td>@context.Code</td>
+        <td>@context.Product.Code</td>
+        <td>@context.Model</td>
+        <td>@context.Type</td>
+        <td>@context.Color</td>
+        <td>@context.Size</td>
+        <td>@context.Description</td>
+        <td>
+            <div class="btn-group">
+                <button type="button" class="btn btn-sm btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                  Action
+                </button>
+                <ul class="dropdown-menu">
+                  <li><a class="dropdown-item" >Details</a></li>
+                  <li><a class="dropdown-item" data-bs-toggle="offcanvas" 
+                                                data-bs-target="#offcanvasUpdate" 
+                                                aria-controls="offcanvasUpdate" 
+                                                @onclick="@(() => SelectVariant(context))">Update</a></li>
+                  <li><hr class="dropdown-divider"></li>
+                  <li><a class="dropdown-item" @onclick=@(() => DeleteVariantAsync(context.VariantId))>Delete</a></li>
+                </ul>
+            </div>
+        </td>
+    </RowTemplate>
+</Table>
+
+
+
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasEnd" aria-labelledby="offcanvasEndLabel">
+  <div class="offcanvas-header">
+    <h5 class="offcanvas-title" id="offcanvasEndLabel">Create a new Variant</h5>
+    <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+  </div>
+  <div class="offcanvas-body">
+
+
+    <VariantForm Variant="@NewVariant" ButtonText="Create" HandleValidSubmit="CreateVariantAsync"/>
+    
+        
+
+  </div>
+</div>
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasUpdate" aria-labelledby="offcanvasUpdateLabel">
+  <div class="offcanvas-header">
+    <h5 class="offcanvas-title" id="offcanvasUpdateLabel">Edit</h5>
+    <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+  </div>
+  <div class="offcanvas-body">
+
+    @if(Variant is not null)
+    {
+        <VariantForm Variant="@Variant" ButtonText="Update" HandleValidSubmit="UpdateVariantAsync"/>
+    }
+        
+
+  </div>
+</div>
+
+
+@code {
+
+
+    [Parameter] public int Id { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            Variants = await GetAsync<List<Variant>>($"variants?productId={Id}");
+        }
+        catch (AccessTokenNotAvailableException exception)
+        {
+            exception.Redirect();
+        }
+
+    }
+
+    public void SelectVariant(Variant variant)
+    {
+        Variant = variant;
+    }
+
+    public async void CreateVariantAsync()
+    {
+        NewVariant.ProductId = Id;
+        var variant = await CreateAsync(NewVariant, "variants");
+
+        Variants.Add(variant);
+        NewVariant = new Variant();
+        StateHasChanged();
+    }
+
+    public async void UpdateVariantAsync()
+    {
+        await UpdateAsync(Variant, "variants", Variant.VariantId);
+        var c = Variants.FirstOrDefault(c => c.VariantId == Variant.VariantId);
+        c = Variant;
+        StateHasChanged();
+    }
+
+    public async void DeleteVariantAsync(int variantId)
+    {
+        var Id = await DeleteAsync<Variant>("variants", variantId);
+        var c = Variants.FirstOrDefault(c => c.VariantId == Id);
+        if(c is not null)
+        {
+            Variants.Remove(c);
+        }
+        
+        StateHasChanged();
+    }
+
+}

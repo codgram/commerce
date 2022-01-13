@@ -1,0 +1,154 @@
+﻿@page "/pm/Products"
+@inject HttpClient _client
+@inject IJSRuntime _jsRuntime
+@inherits ProductManagementBase
+@layout PMLayout
+@attribute [Authorize]
+
+
+<button class="btn btn-primary" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasEnd" aria-controls="offcanvasEnd">
+  Create Product
+</button>
+
+<Table Items="Products" Caption="Products">
+    <TableHeader>
+        <th>Code</th>
+        <th>Family</th>
+        <th>Description</th>
+        <th></th>
+    </TableHeader>
+    
+        <LoadingTemplate>
+            @if(IsLoading) {
+            <Loading Size="3rem"/>
+            }
+        </LoadingTemplate>
+    
+    
+    <RowTemplate>
+        <td>@context.Code</td>
+        <td>@context.Family</td>
+        <td>@context.Description</td>
+        <td>
+            <div class="btn-group">
+                <button type="button" class="btn btn-sm btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                  Action
+                </button>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item">Details</a></li>
+                  <li><a class="dropdown-item" href='@($"pm/products/{context.ProductId}/variants")'>Variants</a></li>
+                  <li><a class="dropdown-item" >Prices</a></li>
+                  <li><a class="dropdown-item" data-bs-toggle="offcanvas" 
+                                                data-bs-target="#offcanvasUpdate" 
+                                                aria-controls="offcanvasUpdate" 
+                                                @onclick="@(() => SelectProduct(context))">Update</a></li>
+                  <li><hr class="dropdown-divider"></li>
+                  <li><a class="dropdown-item" @onclick=@(() => DeleteProductAsync(context.ProductId))>Delete</a></li>
+                </ul>
+            </div>
+        </td>
+    </RowTemplate>
+</Table>
+
+
+
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasEnd" aria-labelledby="offcanvasEndLabel">
+  <div class="offcanvas-header">
+    <h5 class="offcanvas-title" id="offcanvasEndLabel">Create a new Product</h5>
+    <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+  </div>
+  <div class="offcanvas-body">
+    @if (SubGroups is not null && UnitOfMeasures is not null)
+    {
+        <ProductForm    Product="@NewProduct"  
+                        Variant="@NewVariant"
+                        UnitOfMeasures="@UnitOfMeasures"
+                        SubGroups="@SubGroups" 
+                        ButtonText="Create" 
+                        HandleValidSubmit="CreateProductAsync"/>
+    }
+    </div>
+</div>
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasUpdate" aria-labelledby="offcanvasUpdateLabel">
+  <div class="offcanvas-header">
+    <h5 class="offcanvas-title" id="offcanvasUpdateLabel">Edit</h5>
+    <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+  </div>
+  <div class="offcanvas-body">
+
+    @if(Product is not null && SubGroups is not null && UnitOfMeasures is not null)
+    {
+        <ProductForm    Product="@Product" 
+                        UnitOfMeasures="@UnitOfMeasures"
+                        SubGroups="@SubGroups" 
+                        ButtonText="Update" 
+                        HandleValidSubmit="UpdateProductAsync"/>
+    }
+        
+
+  </div>
+</div>
+
+
+@code {
+
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            Products = await GetAsync<List<Product>>($"products?companyId={_stateContainer.Company.CompanyId}");
+            SubGroups = await GetAsync<List<SubGroup>>($"subgroups?companyId={_stateContainer.Company.CompanyId}");
+            UnitOfMeasures = await GetAsync<List<UnitOfMeasure>>($"unitofmeasures?companyId={_stateContainer.Company.CompanyId}");
+        }
+        catch (AccessTokenNotAvailableException exception)
+        {
+            exception.Redirect();
+        }
+
+    }
+
+    public void SelectProduct(Product product)
+    {
+        Product = product;
+    }
+
+    public async void CreateProductAsync()
+    {
+        NewProduct.CompanyId = _stateContainer.Company.CompanyId;
+        var product = await CreateAsync(NewProduct, "products");
+
+        NewVariant.ProductId = product.ProductId;
+        NewVariant.Code = "V001";
+        var variant = await CreateAsync(NewVariant, "variants");
+
+        Products.Add(product);
+        NewProduct = new Product();
+        StateHasChanged();
+    }
+
+    public async void UpdateProductAsync()
+    {
+        await UpdateAsync(Product, "products", Product.ProductId);
+        var g = Products.FirstOrDefault(c => c.ProductId == Product.ProductId);
+        g = Product;
+        StateHasChanged();
+    }
+
+    public async void DeleteProductAsync(int ProductId)
+    {
+        var Id = await DeleteAsync<Product>("products", ProductId);
+        var g = Products.FirstOrDefault(c => c.ProductId == Id);
+        if(g is not null)
+        {
+            Products.Remove(g);
+        }
+        
+        StateHasChanged();
+    }
+
+}

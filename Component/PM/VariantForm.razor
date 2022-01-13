@@ -1,0 +1,48 @@
+﻿
+
+
+
+<EditForm Model="@Variant" OnValidSubmit="@HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+
+    <div class="mb-3">
+      <label for="inputCode" class="form-label">Code</label>
+      <InputText class="form-control" id="inputCode" placeholder="Variant name" @bind-Value="Variant.Code" />
+    </div>
+
+
+    <div class="mb-3">
+      <label for="inputValue" class="form-label">Model</label>
+      <InputText class="form-control" id="inputValue" placeholder="Variant model" @bind-Value="Variant.Model" />
+    </div>
+
+    <div class="mb-3">
+      <label for="inputValue" class="form-label">Type</label>
+      <InputText class="form-control" id="inputValue" placeholder="Variant type" @bind-Value="Variant.Type" />
+    </div>
+
+    <div class="mb-3">
+      <label for="inputValue" class="form-label">Color</label>
+      <InputText class="form-control" id="inputValue" placeholder="Variant color" @bind-Value="Variant.Color" />
+    </div>
+
+    <div class="mb-3">
+      <label for="inputValue" class="form-label">Size</label>
+      <InputText class="form-control" id="inputValue" placeholder="Variant size" @bind-Value="Variant.Size" />
+    </div>
+
+    <div class="mb-3">
+      <label for="inputValue" class="form-label">Flavor</label>
+      <InputText class="form-control" id="inputValue" placeholder="Variant flavor" @bind-Value="Variant.Flavor" />
+    </div>
+
+    <button type="submit" class="btn btn-primary" data-bs-dismiss="offcanvas"  aria-label="Close">@ButtonText</button>
+</EditForm>
+
+@code {
+    [Parameter] public Variant Variant { get; set;}
+    [Parameter] public EventCallback HandleValidSubmit { get; set; }
+    [Parameter] public string ButtonText { get; set; }
+}

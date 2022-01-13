@@ -1,0 +1,128 @@
+﻿@page "/pm/subgroups"
+@inject HttpClient _client
+@inject IJSRuntime _jsRuntime
+@inherits ProductManagementBase
+@layout PMLayout
+@attribute [Authorize]
+
+
+<button class="btn btn-primary" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasEnd" aria-controls="offcanvasEnd">
+  Create Sub-group
+</button>
+
+
+<Table Items="SubGroups" Caption="sub-groups">
+    <TableHeader>
+        <th>Name</th>
+        <th>Description</th>
+        <th></th>
+    </TableHeader>
+    <RowTemplate>
+        <td>@context.Name</td>
+        <td>@context.Description</td>
+        <td>
+            <div class="btn-group">
+                <button type="button" class="btn btn-sm btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                  Action
+                </button>
+                <ul class="dropdown-menu">
+                  <li><a class="dropdown-item" >Details</a></li>
+                  <li><a class="dropdown-item" data-bs-toggle="offcanvas" 
+                                                data-bs-target="#offcanvasUpdate" 
+                                                aria-controls="offcanvasUpdate" 
+                                                @onclick="@(() => SelectSubGroup(context))">Update</a></li>
+                  <li><hr class="dropdown-divider"></li>
+                  <li><a class="dropdown-item" @onclick=@(() => DeleteSubGroupAsync(context.SubGroupId))>Delete</a></li>
+                </ul>
+            </div>
+        </td>
+    </RowTemplate>
+</Table>
+
+
+
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasEnd" aria-labelledby="offcanvasEndLabel">
+  <div class="offcanvas-header">
+    <h5 class="offcanvas-title" id="offcanvasEndLabel">Create a new Group</h5>
+    <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+  </div>
+  <div class="offcanvas-body">
+    @if (Groups is not null)
+    {
+        <SubgroupForm SubGroup="@NewSubGroup" Groups="@Groups" ButtonText="Create" HandleValidSubmit="CreateSubGroupAsync"/>
+    }
+    </div>
+</div>
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasUpdate" aria-labelledby="offcanvasUpdateLabel">
+  <div class="offcanvas-header">
+    <h5 class="offcanvas-title" id="offcanvasUpdateLabel">Edit</h5>
+    <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+  </div>
+  <div class="offcanvas-body">
+
+    @if(SubGroup is not null && Groups is not null)
+    {
+        <SubgroupForm SubGroup="@SubGroup" Groups="@Groups" ButtonText="Update" HandleValidSubmit="UpdateSubGroupAsync"/>
+    }
+        
+
+  </div>
+</div>
+
+
+@code {
+
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            Groups = await GetAsync<List<Group>>($"groups?companyId={_stateContainer.Company.CompanyId}");
+            SubGroups = await GetAsync<List<SubGroup>>($"subgroups?companyId={_stateContainer.Company.CompanyId}");
+            
+        }
+        catch (AccessTokenNotAvailableException exception)
+        {
+            exception.Redirect();
+        }
+
+    }
+
+    public void SelectSubGroup(SubGroup subGroup)
+    {
+        SubGroup = subGroup;
+    }
+
+    public async void CreateSubGroupAsync()
+    {
+        var subGroup = await CreateAsync(NewSubGroup, "subgroups");
+        SubGroups.Add(subGroup);
+        NewSubGroup = new SubGroup();
+        StateHasChanged();
+    }
+
+    public async void UpdateSubGroupAsync()
+    {
+        await UpdateAsync(SubGroup, "subgroups", SubGroup.SubGroupId);
+        var sg = SubGroups.FirstOrDefault(c => c.SubGroupId == SubGroup.SubGroupId);
+        sg = SubGroup;
+        StateHasChanged();
+    }
+
+    public async void DeleteSubGroupAsync(int SubGroupId)
+    {
+        var Id = await DeleteAsync<SubGroup>("subgroups", SubGroupId);
+        var sg = SubGroups.FirstOrDefault(c => c.SubGroupId == Id);
+        if(sg is not null)
+        {
+            SubGroups.Remove(sg);
+        }
+        
+        StateHasChanged();
+    }
+
+}

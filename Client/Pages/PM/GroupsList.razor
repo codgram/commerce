@@ -1,0 +1,127 @@
+﻿@page "/pm/groups"
+@inject HttpClient _client
+@inject IJSRuntime _jsRuntime
+@inherits ProductManagementBase
+@layout PMLayout
+@attribute [Authorize]
+
+
+<button class="btn btn-primary" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasEnd" aria-controls="offcanvasEnd">
+  Create Group
+</button>
+
+
+<Table Items="Groups" Caption="Groups">
+    <TableHeader>
+        <th>Name</th>
+        <th>Description</th>
+        <th></th>
+    </TableHeader>
+    <RowTemplate>
+        <td>@context.Name</td>
+        <td>@context.Description</td>
+        <td>
+            <div class="btn-group">
+                <button type="button" class="btn btn-sm btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                  Action
+                </button>
+                <ul class="dropdown-menu">
+                  <li><a class="dropdown-item" >Details</a></li>
+                  <li><a class="dropdown-item" data-bs-toggle="offcanvas" 
+                                                data-bs-target="#offcanvasUpdate" 
+                                                aria-controls="offcanvasUpdate" 
+                                                @onclick="@(() => SelectGroup(context))">Update</a></li>
+                  <li><hr class="dropdown-divider"></li>
+                  <li><a class="dropdown-item" @onclick=@(() => DeleteGroupAsync(context.GroupId))>Delete</a></li>
+                </ul>
+            </div>
+        </td>
+    </RowTemplate>
+</Table>
+
+
+
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasEnd" aria-labelledby="offcanvasEndLabel">
+  <div class="offcanvas-header">
+    <h5 class="offcanvas-title" id="offcanvasEndLabel">Create a new Group</h5>
+    <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+  </div>
+  <div class="offcanvas-body">
+    @if (Categories is not null)
+    {
+        <GroupForm Group="@NewGroup" Categories="@Categories" ButtonText="Create" HandleValidSubmit="CreateGroupAsync"/>
+    }
+    </div>
+</div>
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasUpdate" aria-labelledby="offcanvasUpdateLabel">
+  <div class="offcanvas-header">
+    <h5 class="offcanvas-title" id="offcanvasUpdateLabel">Edit</h5>
+    <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+  </div>
+  <div class="offcanvas-body">
+
+    @if(Group is not null && Categories is not null)
+    {
+        <GroupForm Group="@Group" Categories="@Categories" ButtonText="Update" HandleValidSubmit="UpdateGroupAsync"/>
+    }
+        
+
+  </div>
+</div>
+
+
+@code {
+
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            Groups = await GetAsync<List<Group>>($"groups?companyId={_stateContainer.Company.CompanyId}");
+            Categories = await GetAsync<List<Category>>($"categories?companyId={_stateContainer.Company.CompanyId}");
+        }
+        catch (AccessTokenNotAvailableException exception)
+        {
+            exception.Redirect();
+        }
+
+    }
+
+    public void SelectGroup(Group Group)
+    {
+        Group = Group;
+    }
+
+    public async void CreateGroupAsync()
+    {
+        var Group = await CreateAsync(NewGroup, "groups");
+        Groups.Add(Group);
+        NewGroup = new Group();
+        StateHasChanged();
+    }
+
+    public async void UpdateGroupAsync()
+    {
+        await UpdateAsync(Group, "Groups", Group.GroupId);
+        var g = Groups.FirstOrDefault(c => c.GroupId == Group.GroupId);
+        g = Group;
+        StateHasChanged();
+    }
+
+    public async void DeleteGroupAsync(int GroupId)
+    {
+        var Id = await DeleteAsync<Group>("groups", GroupId);
+        var g = Groups.FirstOrDefault(c => c.GroupId == Id);
+        if(g is not null)
+        {
+            Groups.Remove(g);
+        }
+        
+        StateHasChanged();
+    }
+
+}

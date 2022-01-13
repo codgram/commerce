@@ -1,0 +1,85 @@
+﻿@using Commerce.Client.Services
+@inject StateContainer StateContainer
+@inject HttpClient _client
+@inject IJSRuntime _jsRuntime
+
+<div class="top-row ps-3 navbar navbar-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="">Commerce</a>
+        <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+    </div>
+</div>
+
+@if(StateContainer.Companies is not null)
+{
+    <ChooseCompany Companies="StateContainer.Companies" SelectCompany="SelectCompany"/>
+}
+
+
+<div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
+    <nav class="flex-column">
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                <span class="oi oi-home" aria-hidden="true"></span> Home
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="org/companies">
+                <span class="oi oi-list-rich" aria-hidden="true"></span> Companies
+            </NavLink>
+        </div>
+    </nav>
+</div>
+
+@code {
+    public List<Company> Companies { get; set; }
+    private bool collapseNavMenu = true;
+
+    private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+
+    private void ToggleNavMenu()
+    {
+        collapseNavMenu = !collapseNavMenu;
+    }
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        if(StateContainer.Company is null || StateContainer.Companies is null)
+        {
+            try
+            {
+                Companies = await _client.GetFromJsonAsync<List<Company>>("api/companies");
+                var slug = await GetCompanyAsync();
+                if(!String.IsNullOrEmpty(slug))
+                {
+                    SelectCompany(Companies.FirstOrDefault(c => c.Slug == slug));
+                }
+
+                if(StateContainer.Companies is null)
+                {
+                    StateContainer.Companies = Companies;
+                }
+
+            }
+            catch (AccessTokenNotAvailableException exception)
+            {
+                exception.Redirect();
+            }
+        }
+    }
+
+    void SelectCompany(Company company)
+    {
+        StateContainer.Company = company;
+        StateHasChanged();
+    }
+
+    private async Task<string> GetCompanyAsync()
+    {
+        return await _jsRuntime.InvokeAsync<string>($"sessionStorage.getItem", "company");
+    }
+
+}

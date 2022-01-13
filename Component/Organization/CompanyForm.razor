@@ -1,0 +1,88 @@
+﻿
+@inject HttpClient _client
+@inject NavigationManager NavigationManager
+
+
+<EditForm Model="@Company" OnValidSubmit="@HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+
+    <div class="mb-3">
+      <label for="inputName" class="form-label">Name</label>
+      <InputText class="form-control" id="inputName" placeholder="My Company" @bind-Value="Company.Name" @oninput="(e) => UpdateSlug(e)"/>
+    </div>
+
+    @*<div class="mb-3">
+      <label for="inputName" class="form-label">Slug</label>
+      <InputText class="form-control" id="inputName" placeholder="My Company" @bind-Value="Company.Slug" />
+      <p><span class="fw-bold">@NavigationManager.BaseUri </span>@Company.Slug</p>
+    </div>*@
+
+    <div class="col-md-12">
+        <label for="validationSlug" class="form-label">Company URL</label>
+        <input type="text" class="form-control @SlugIsValid" id="validationSlug" aria-describedby="validationSlugFeedback" required @bind='Company.Slug'/>
+        <div id="validationSlugFeedback" class="invalid-feedback">
+          @SlugMessage
+        </div>
+        <p><span class="fw-bold">@NavigationManager.BaseUri </span>@Company.Slug</p>
+        <div class="valid-feedback">
+            Looks good!
+        </div>
+    </div>
+
+    <div class="mb-3">
+      <label for="inputDescription" class="form-label">Description</label>
+      <InputTextArea class="form-control" id="inputDescription" placeholder="Some info about the company" rows="3" @bind-Value="Company.Description"></InputTextArea>
+    </div>
+
+    <button type="submit" class="btn btn-primary" data-bs-dismiss="offcanvas"  aria-label="Close">@ButtonText</button>
+</EditForm>
+
+@code {
+    [Parameter] public Company Company { get; set;}
+    [Parameter] public string[] CompanySlugs { get; set;}
+    [Parameter] public EventCallback HandleValidSubmit { get; set; }
+
+    public string? SlugIsValid { get; set; }
+    public string? SlugMessage { get; set; }
+
+
+    [Parameter] public string ButtonText { get; set; }
+
+
+
+    private void UpdateSlug(ChangeEventArgs e)
+    {
+        Company.Slug = e.Value.ToString().Replace(" ", "").ToLower();
+        ValidateSlug(Company.Slug);
+    }
+
+    public async void ValidateSlug(string slug)
+    {
+        //Console.WriteLine("-------Test -01--------");
+        //var company = await _client.GetFromJsonAsync<Company>($"api/companies/{slug}");
+
+        Console.WriteLine("-------Test 00--------");
+
+        if(CompanySlugs.Contains(slug))
+        {
+            Console.WriteLine("-------Test 01--------");
+            SlugIsValid = "is-invalid";
+            SlugMessage = "URL already exist!";
+            
+        }
+        else if(String.IsNullOrEmpty(slug))
+        {
+            Console.WriteLine("-------Test 02--------");
+            SlugIsValid = "is-invalid";
+            SlugMessage = "URL cannot be empty!";
+        }
+        else
+        {
+            Console.WriteLine("-------Test 03--------");
+            SlugIsValid = "is-valid";
+            SlugMessage = "";
+        }
+    }
+}

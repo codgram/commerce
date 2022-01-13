@@ -1,0 +1,43 @@
+﻿@inherits LayoutComponentBase
+@inject StateContainer StateContainer
+
+<div class="page">
+    <div class="sidebar bg-dark">
+        <OrgMenu />
+    </div>
+
+    <main>
+        <div class="top-row px-4 auth">
+            <LoginDisplay />
+            @if(StateContainer.Company is not null) {
+                <a class="btn btn-sm btn-secondary" 
+                        data-bs-toggle="offcanvas" 
+                        data-bs-target="#offcanvasChooseCompany" 
+                        aria-controls="offcanvasChooseCompany">
+                        @StateContainer.Company.Slug</a>
+            }
+            else {
+                <a class="btn btn-sm btn-secondary" 
+                        data-bs-toggle="offcanvas" 
+                        data-bs-target="#offcanvasChooseCompany" 
+                        aria-controls="offcanvasChooseCompany">
+                        Choose company</a>
+            }
+        </div>
+
+        <article class="content px-4">
+            @Body
+        </article>
+    </main>
+</div>
+
+
+
+
+@code{
+
+    protected override void OnInitialized()
+    {
+        StateContainer.OnChange += StateHasChanged;
+    }
+}
