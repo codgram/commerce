@@ -18,7 +18,7 @@
 }
 
 
-<div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
+<div class="@NavMenuCssClass" > @*@onclick="ToggleNavMenu"*@
     <nav class="flex-column">
 
         @if(StateContainer.Company is null && Companies is not null)
@@ -30,52 +30,111 @@
                         <span class="oi oi-list-rich" aria-hidden="true"></span> @company.Name
                     </NavLink>
                 </div>
-
             }
-
         }
         else
         {
            
-
             <div class="nav-item px-3">
                 <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
                     <span class="oi oi-home" aria-hidden="true"></span> Home
                 </NavLink>
             </div>
-            <div class="nav-item px-3">
-                <NavLink class="nav-link" href="pm">
-                    <span class="oi oi-list-rich" aria-hidden="true"></span> Product Management
+
+            <div class="nav-item px-3" >
+                <NavLink class="nav-link" href="pm" @onclick="()=>expandProductManagement = !expandProductManagement">
+                    <i class="bi bi-box me-2" style="font-size: 1.3rem;"></i>
+                    Product Management
                 </NavLink>
             </div>
+
+            @if (expandProductManagement)
+            {
+                <div class="ms-3" @onclick="ToggleNavMenu">
+                    <div class="nav-item px-3">
+                        <NavLink class="nav-link" href="pm/categories" Match="NavLinkMatch.All">
+                            <span class="oi oi-list-rich" aria-hidden="true"></span> Categories
+                        </NavLink>
+                    </div>
+                    <div class="nav-item px-3">
+                        <NavLink class="nav-link" href="pm/groups" Match="NavLinkMatch.All">
+                            <span class="oi oi-list-rich" aria-hidden="true"></span> Groups
+                        </NavLink>
+                    </div>
+                    <div class="nav-item px-3">
+                        <NavLink class="nav-link" href="pm/subgroups" Match="NavLinkMatch.All">
+                            <span class="oi oi-list-rich" aria-hidden="true"></span> Subgroups
+                        </NavLink>
+                    </div>
+                    <div class="nav-item px-3">
+                        <NavLink class="nav-link" href="pm/products" Match="NavLinkMatch.All">
+                            <span class="oi oi-list-rich" aria-hidden="true"></span> Products
+                        </NavLink>
+                    </div>
+                </div>
+            
+            }
+
             <div class="nav-item px-3">
-                <NavLink class="nav-link" href="setup"  Match="NavLinkMatch.All">
-                    <span class="oi oi-list-rich" aria-hidden="true"></span> Setup
+                <NavLink class="nav-link" href="setup"  Match="NavLinkMatch.Prefix" @onclick="()=>expandSetup= !expandSetup">
+                    <i class="bi bi-gear me-2" style="font-size: 1.3rem;"></i>
+                    Setup
                 </NavLink>
             </div>
+
+            @if (expandSetup)
+            {
+                <div class="ms-3" @onclick="ToggleNavMenu">
+                    <div class="nav-item px-3">
+                        <NavLink class="nav-link" href="setup/uom" Match="NavLinkMatch.All">
+                            <span class="oi oi-list-rich" aria-hidden="true"></span> Unit of Measures
+                        </NavLink>
+                    </div>
+                </div>
+            }
             
             
         }
 
         <div class="nav-item px-3">
-            <NavLink class="nav-link" href="org"  Match="NavLinkMatch.All">
-                <span class="oi oi-list-rich" aria-hidden="true"></span> Organization
+            <NavLink class="nav-link" href="org"  Match="NavLinkMatch.Prefix" @onclick="()=>expandOrganization = !expandOrganization">
+                <i class="bi bi-building me-2" style="font-size: 1.3rem;"></i>
+                Organization
             </NavLink>
         </div> 
-        
+
+        @if (expandOrganization)
+        {
+            <div class="ms-3" @onclick="ToggleNavMenu">
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="org/companies">
+                        <span class="oi oi-list-rich" aria-hidden="true"></span> Companies
+                    </NavLink>
+                </div>
+            </div>
+        }
+
     </nav>
 </div>
 
 @code {
     public List<Company> Companies { get; set; }
+
     private bool collapseNavMenu = true;
 
+    private bool expandOrganization;
+    private bool expandProductManagement;
+    private bool expandSetup;
+
     private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+
+
 
     private void ToggleNavMenu()
     {
         collapseNavMenu = !collapseNavMenu;
     }
+
 
 
     protected override async Task OnInitializedAsync()
