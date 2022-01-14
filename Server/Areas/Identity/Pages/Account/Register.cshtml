@@ -10,6 +10,15 @@
     <div class="col-md-6 ">
         <form id="registerForm" asp-route-returnUrl="@Model.ReturnUrl" method="post">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <div class="form-floating mb-3" >
+                <select class="form-select" id="floatingSelect" aria-label="Floating label select example" asp-for="Input.CountryId" asp-items="@(new SelectList(Model.Countries, "CountryId", "Name"))">
+                    <option value="">Pick one</option>
+                </select>
+                <label for="floatingSelect">Country</label>
+
+            </div>
+
             <div class="form-floating mb-3">
               <input asp-for="Input.UserName" type="username" autocomplete="username" aria-required="true" class="form-control rounded-4" id="floatingUsername" placeholder="name">
               <label asp-for="Input.UserName" for="floatingUsername"></label>

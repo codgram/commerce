@@ -19,6 +19,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
+using Microsoft.EntityFrameworkCore;
 
 namespace Commerce.Server.Areas.Identity.Pages.Account
 {
@@ -30,13 +31,15 @@ namespace Commerce.Server.Areas.Identity.Pages.Account
         private readonly IUserEmailStore<CommerceUser> _emailStore;
         private readonly ILogger<RegisterModel> _logger;
         private readonly IEmailSender _emailSender;
+        private readonly CommerceContext _context;
 
         public RegisterModel(
             UserManager<CommerceUser> userManager,
             IUserStore<CommerceUser> userStore,
             SignInManager<CommerceUser> signInManager,
             ILogger<RegisterModel> logger,
-            IEmailSender emailSender)
+            IEmailSender emailSender,
+            CommerceContext context)
         {
             _userManager = userManager;
             _userStore = userStore;
@@ -44,6 +47,7 @@ namespace Commerce.Server.Areas.Identity.Pages.Account
             _signInManager = signInManager;
             _logger = logger;
             _emailSender = emailSender;
+            _context = context;
         }
 
         /// <summary>
@@ -71,6 +75,10 @@ namespace Commerce.Server.Areas.Identity.Pages.Account
         /// </summary>
         public class InputModel
         {
+            [Required]
+            [Display(Name = "Country")]
+            public int CountryId { get; set; }
+
 
             [Required]
             [Display(Name = "Username")]
@@ -106,11 +114,12 @@ namespace Commerce.Server.Areas.Identity.Pages.Account
             public string ConfirmPassword { get; set; }
         }
 
-
+        public List<Country> Countries { get; set; }
         public async Task OnGetAsync(string returnUrl = null)
         {
             ReturnUrl = returnUrl;
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
+            Countries = await _context.Country.ToListAsync();
         }
 
         public async Task<IActionResult> OnPostAsync(string returnUrl = null)
@@ -120,7 +129,7 @@ namespace Commerce.Server.Areas.Identity.Pages.Account
             if (ModelState.IsValid)
             {
                 var user = CreateUser();
-
+                user.CountryId = Input.CountryId;
                 await _userStore.SetUserNameAsync(user, Input.UserName, CancellationToken.None);
                 await _emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
                 var result = await _userManager.CreateAsync(user, Input.Password);
